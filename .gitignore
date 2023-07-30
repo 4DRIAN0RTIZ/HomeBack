@@ -1,0 +1,5 @@
+__pycache__
+.env
+client_secrets.json
+credentials_module.json
+settings.yaml
