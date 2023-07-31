@@ -56,6 +56,7 @@ done
 backup_dir="$HOME/.backup"
 
 # Carpetas a excluir en la copia de seguridad
+
 declare -A carpetas_excluidas=(
 	[".cache"]="$HOME/.cache"
 	[".bin"]="$HOME/.bin"
@@ -70,28 +71,33 @@ declare -A carpetas_excluidas=(
 	[".backup"]="$HOME/.backup"
 )
 
+# Convertir rutas a rutas absolutas
+for i in "${!carpetas_excluidas[@]}"; do
+	carpetas_excluidas[$i]=$(realpath "${carpetas_excluidas[$i]}")
+done
+
 # Crear directorio de backup si no existe
 if [ ! -d "$backup_dir" ]; then
 	mkdir -p "$backup_dir"
 fi
 
 # Eliminar archivos de backup antiguos
-# Se puede cambiar el número de días a conservar
 #find "$backup_dir" -type f -mtime +7 -delete
 find "$backup_dir" -type f -delete
 
 # Nombre del archivo de backup
 backup_archivo="backup_home_$(date +%Y%m%d_%H%M%S).tar.gz"
 
-# Crear archivo de backup y comprimirlo en el directorio de destino, el segundo parámetro es la ruta de la carpeta a comprimir.
-tar_cmd="tar -czf $backup_dir/$backup_archivo $HOME 2> /dev/null"
-
+# Construir el comando tar con las carpetas a excluir
+tar_cmd=("tar")
 for carpeta in "${carpetas_excluidas[@]}"; do
-	tar_cmd+=" --exclude=$carpeta"
+	tar_cmd+=("--exclude=$carpeta")
 done
 
+tar_cmd+=("-czf" "$backup_dir/$backup_archivo" "$HOME")
+
 echo "Creando backup..."
-eval "$tar_cmd"
+"${tar_cmd[@]}"
 
 echo "Backup completado: $backup_dir/$backup_archivo"
 sleep 2
