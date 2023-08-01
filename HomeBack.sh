@@ -13,13 +13,37 @@ function ctrl_c() {
 	exit 1
 }
 
-# Verificación de dependencias
+# Comprobar distro
 
+function obtener_distro() {
+	distro= $(grep -m1 "^ID=" /etc/os-release | awk -F'=' '{ print $2 }' | tr -d '"')
+
+	case "$distro" in
+	"ubuntu" | "debian" | "linuxmint" | "kali")
+		echo "apt-get"
+		;;
+	"fedora" | "centos" | "rhel")
+		echo "dnf"
+		;;
+	"arch")
+		echo "pacman"
+		;;
+	*)
+		echo "No se pudo detectar la distro"
+		exit 1
+		;;
+	esac
+}
+
+manejador_paquetes=$(obtener_distro)
+
+# Verificación de dependencias
 declare -A dependencias=(
-	["wget"]="sudo apt install wget -y"
-	["tar"]="sudo apt install tar -y"
-	["python3"]="sudo apt install python-is-python3 -y"
+	["wget"]="sudo $manejador_paquetes install wget -y"
+	["tar"]="sudo $manejador_paquetes install tar -y"
+	["python3"]="sudo $manejador_paquetes install python-is-python3 -y"
 )
+
 for dependencia in "${!dependencias[@]}"; do
 	if ! command -v "$dependencia" &>/dev/null; then
 		echo "El comando '$dependencia' no está instalado"
@@ -32,8 +56,7 @@ for dependencia in "${!dependencias[@]}"; do
 	fi
 done
 
-# Verificación de archivos en el directorio
-
+# Verificación de archivos en el directorio actual
 declare -A archivos_a_descargar=(
 	["settings.yaml"]="https://gist.githubusercontent.com/4DRIAN0RTIZ/45c6273ebe20efeaf02c53ec156fd417/raw/63209dc6b5ac5cb2f870bfddcc0d6412bccded21/settings.yaml"
 	["gdrive.py"]="https://gist.githubusercontent.com/4DRIAN0RTIZ/5da96f80dd35f81d596b0f95517ed838/raw/bb106e6e7efa3a5733245bbcb9a033783147f7ca/gdrive.py"
