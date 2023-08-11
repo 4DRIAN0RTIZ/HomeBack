@@ -16,7 +16,7 @@ function ctrl_c() {
 # Comprobar distro
 
 function obtener_distro() {
-	distro= $(grep -m1 "^ID=" /etc/os-release | awk -F'=' '{ print $2 }' | tr -d '"')
+	distro=$(grep -m1 "^ID=" /etc/os-release | awk -F'=' '{ print $2 }' | tr -d '"')
 
 	case "$distro" in
 	"ubuntu" | "debian" | "linuxmint" | "kali")
